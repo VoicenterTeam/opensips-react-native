@@ -1,0 +1,1 @@
+{"version":3,"file":"ReactSipApiContext.d.ts","sourceRoot":"","sources":["../../../src/context/ReactSipApiContext.tsx"],"names":[],"mappings":"AAAA,OAAO,KAAK,MAAM,OAAO,CAAC;AAE1B,OAAO,EAA0B,KAAK,WAAW,EAAE,MAAM,UAAU,CAAC;AAiBpE,eAAO,MAAM,eAAe,qCAA0C,CAAC;AAEvE,eAAO,MAAM,gBAAgB,kBAE1B;IACD,QAAQ,EAAE,MAAM,SAAS,CAAC;CAC3B,4CA0UA,CAAC"}

@@ -1,0 +1,55 @@
+{
+  "name": "@voicenter-team/react-native-opensips",
+  "version": "0.0.5",
+  "type": "module",
+  "scripts": {
+    "prepare": "bob build"
+  },
+  "main": "library/commonjs/index.js",
+  "module": "library/module/index.js",
+  "types": "library/typescript/index.d.ts",
+  "files": [
+    "library/*"
+  ],
+  "dependencies": {
+    "@voicenter-team/opensips-js": "^1.0.75",
+    "core-js": "3.8.3",
+    "react": "18.2.0",
+    "react-dom": "^18.3.1",
+    "react-native": "0.74.1",
+    "react-native-webrtc": "^118.0.7"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*",
+    "react-native-webrtc": "*"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0",
+    "@babel/preset-env": "^7.20.0",
+    "@babel/runtime": "^7.20.0",
+    "@react-native/babel-preset": "^0.74.83",
+    "@react-native/metro-config": "0.74.83",
+    "@react-native/typescript-config": "0.74.83",
+    "@react-native/eslint-config": "^0.73.1",
+    "@types/node": "^20.12.7",
+    "@types/react": "^18.2.66",
+    "@typescript-eslint/eslint-plugin": "^7.2.0",
+    "@typescript-eslint/parser": "^7.2.0",
+    "babel-plugin-module-resolver": "^5.0.0",
+    "eslint": "^8.51.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "react-native-builder-bob": "^0.23.2",
+    "typescript": "^5.2.2"
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "library",
+    "targets": [
+      "commonjs",
+      "module",
+      "typescript"
+    ]
+  }
+}
