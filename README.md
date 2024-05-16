@@ -25,15 +25,18 @@ _AndroidMainfest.xml_
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 ```
 ## Basic Usage
-
+install react-native-webrt library 
+```
+yarn add react-native-webrtc
+```
 _App.tsx_
 
 ```js
-redeclareGlobals();
 import {
   ReactSipProvider,
   redeclareGlobals,
 } from "@voicenter-team/react-native-opensips";
+redeclareGlobals();
 export const App = (): JSX.Element => {
   return (
     <ReactSipProvider>
@@ -49,39 +52,39 @@ _MainComponent.tsx_
 import React, { useContext } from 'react';
 import { ReactSipContext } from '@voicenter-team/react-native-opensips';
 export const MainComponent = () => {
-const {actions, state} = useContext(ReactSipContext)
-const {
-  selectedInputDevice,
-  selectedOutputDevice,
-  muteWhenJoin,
-  isDND,
-  addCallToCurrentRoom,
-  microphoneInputLevel,
-  speakerVolume,
-  isMuted,
-  callAddingInProgress,
-  activeCalls,
-  callsInActiveRoom,
-  currentActiveRoomId,
-  activeRooms
-} = state
+  const {actions, state} = useContext(ReactSipContext)
+  const {
+    selectedInputDevice,
+    selectedOutputDevice,
+    muteWhenJoin,
+    isDND,
+    addCallToCurrentRoom,
+    microphoneInputLevel,
+    speakerVolume,
+    isMuted,
+    callAddingInProgress,
+    activeCalls,
+    callsInActiveRoom,
+    currentActiveRoomId,
+    activeRooms
+  } = state
 
-const {
-  doCall,
-  sendDTMF,
-  muteCaller,
-  callTerminate,
-  callTransfer,
-  callMerge,
-  doCallHold,
-  callAnswer,
-  callMove,
-  doMute
-} = actions
-//other code
-return (
-  //render your coponent
-)
+  const {
+    doCall,
+    sendDTMF,
+    muteCaller,
+    callTerminate,
+    callTransfer,
+    callMerge,
+    doCallHold,
+    callAnswer,
+    callMove,
+    doMute
+  } = actions
+  //other code
+  return (
+    //render your coponent
+  )
 }
 ```
 
