@@ -17,13 +17,11 @@
     "importHelpers": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "emitDeclarationOnly": true,
     "allowImportingTsExtensions": true,
     "lib": [
       "es2015",
       "es2017",
       "esnext",
-      "dom",
       "dom.iterable"
     ],
     "skipLibCheck": true,

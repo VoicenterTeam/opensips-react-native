@@ -2061,6 +2061,18 @@
   resolved "https://registry.yarnpkg.com/@ungap/structured-clone/-/structured-clone-1.2.0.tgz#756641adb587851b5ccb3e095daf27ae581c8406"
   integrity sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==
 
+"@voicenter-team/eslint-config-react-native@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@voicenter-team/eslint-config-react-native/-/eslint-config-react-native-1.0.2.tgz#d5b64887b094fa1b9b850538b52f09a5be066678"
+  integrity sha512-hb2vhBihw9Hj+UtT7gXabX8zoZ9LmV3LvCAbVHsdo6r7yGmnVv42hs2OnolnCGarfev7fGvNuiuXCjuEo6mdDA==
+  dependencies:
+    "@voicenter-team/eslint-config-ts" "1.0.24"
+
+"@voicenter-team/eslint-config-ts@1.0.24":
+  version "1.0.24"
+  resolved "https://registry.yarnpkg.com/@voicenter-team/eslint-config-ts/-/eslint-config-ts-1.0.24.tgz#aa639b6539fa4d7811a936b78d11a5cd73f3b7fb"
+  integrity sha512-bmN463CEUZE/ogSrh7BXcq0TPCbVQayJzfg9W9rU9ahB46MhfWWg5Pu9Yn46McRWOFjenndogVfvnHWy9gvLug==
+
 "@voicenter-team/opensips-js@^1.0.77":
   version "1.0.77"
   resolved "https://registry.yarnpkg.com/@voicenter-team/opensips-js/-/opensips-js-1.0.77.tgz#7e6b6f3d4f6f694f8329a09b4fccdc8c2acf47e7"
@@ -3105,6 +3117,11 @@ eslint-plugin-react-native@^4.0.0:
   integrity sha512-QLo7rzTBOl43FvVqDdq5Ql9IoElIuTdjrz9SKAXCvULvBoRZ44JGSkx9z4999ZusCsb4rK3gjS8gOGyeYqZv2Q==
   dependencies:
     eslint-plugin-react-native-globals "^0.1.1"
+
+eslint-plugin-react-refresh@^0.4.7:
+  version "0.4.7"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-react-refresh/-/eslint-plugin-react-refresh-0.4.7.tgz#1f597f9093b254f10ee0961c139a749acb19af7d"
+  integrity sha512-yrj+KInFmwuQS2UQcg1SF83ha1tuHC1jMQbRNyuWtlEzzKRDgAl7L4Yp4NlDUZTZNlWvHEzOtJhMi40R7JxcSw==
 
 eslint-plugin-react@^7.30.1:
   version "7.34.1"
@@ -6050,6 +6067,11 @@ ts-api-utils@^1.3.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/ts-api-utils/-/ts-api-utils-1.3.0.tgz#4b490e27129f1e8e686b45cc4ab63714dc60eea1"
   integrity sha512-UQMIo7pb8WRomKR1/+MFVLTroIvDVtMX3K6OUir8ynLyzB8Jeriont2bTAtmNPa1ekAgN7YPDyf6V+ygrdU+eQ==
+
+tsc@^2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/tsc/-/tsc-2.0.4.tgz#5f6499146abea5dca4420b451fa4f2f9345238f5"
+  integrity sha512-fzoSieZI5KKJVBYGvwbVZs/J5za84f2lSTLPYf6AGiIf43tZ3GNrI1QzTLcjtyDDP4aLxd46RTZq1nQxe7+k5Q==
 
 tslib@^1.8.1:
   version "1.14.1"

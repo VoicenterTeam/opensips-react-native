@@ -1,14 +1,14 @@
 import {
-  ICallStatus,
-  ICall,
-  IRoom,
-} from "@voicenter-team/opensips-js/src/types/rtc";
-import { ITimeData } from "@voicenter-team/opensips-js/src/types/timer";
+    ICallStatus,
+    ICall,
+    IRoom,
+} from '@voicenter-team/opensips-js/src/types/rtc'
+import { ITimeData } from '@voicenter-team/opensips-js/src/types/timer'
 import {
-  MSRPMessage,
-  IMessage,
-} from "@voicenter-team/opensips-js/src/types/msrp";
-import { type MediaStream } from "react-native-webrtc";
+    MSRPMessage,
+    IMessage,
+} from '@voicenter-team/opensips-js/src/types/msrp'
+import { type MediaStream } from 'react-native-webrtc'
 
 export interface ReactSipAPI {
   state: ReactSipAPIState;
@@ -21,7 +21,7 @@ export interface InitConfig {
   password: string;
 }
 
-export type MediaDeviceOption = Omit<MediaDeviceInfo, "toJSON">;
+export type MediaDeviceOption = Omit<MediaDeviceInfo, 'toJSON'>;
 
 export interface ReactSipAPIState {
   isInitialized: boolean;
@@ -92,7 +92,4 @@ export interface ReactSipAPIActions {
   setMicrophoneSensitivity: (value: number) => void;
   setSpeakerVolume: (value: number) => void;
   setAutoAnswer: (value: boolean) => void;
-}
-declare global {
-  var AudioContext: any;
 }
