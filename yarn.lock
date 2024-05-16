@@ -2061,10 +2061,10 @@
   resolved "https://registry.yarnpkg.com/@ungap/structured-clone/-/structured-clone-1.2.0.tgz#756641adb587851b5ccb3e095daf27ae581c8406"
   integrity sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==
 
-"@voicenter-team/opensips-js@^1.0.75":
-  version "1.0.76"
-  resolved "https://registry.yarnpkg.com/@voicenter-team/opensips-js/-/opensips-js-1.0.76.tgz#ae8037c2c4c1b45def1c0feaa8249e551407c1a7"
-  integrity sha512-+TxUVFDyblBpkZAfry1grXbY2bbKLE+6piHC1U+Fm5TiYEeIUwhpWSmS9w8w/Lpncs/5E0/2RBrz5ZbTNnwmGg==
+"@voicenter-team/opensips-js@^1.0.77":
+  version "1.0.77"
+  resolved "https://registry.yarnpkg.com/@voicenter-team/opensips-js/-/opensips-js-1.0.77.tgz#7e6b6f3d4f6f694f8329a09b4fccdc8c2acf47e7"
+  integrity sha512-KHljAJR+lBkM58EohiHqz0bhJRphOhMypxS9j3eqgdCBfEUeQzneTpGA4hZGdSqhAhaOoQTyYpmm7AVi2i/7dA==
   dependencies:
     "@types/mime" "^3.0.1"
     generate-unique-id "^2.0.1"
