@@ -1,6 +1,6 @@
 {
   "name": "@voicenter-team/react-native-opensips",
-  "version": "0.0.13",
+  "version": "0.0.2",
   "type": "module",
   "scripts": {
     "prepare": "bob build",
