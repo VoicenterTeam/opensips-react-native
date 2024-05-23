@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { createContext, useEffect, useState } from 'react'
-import { type MediaDeviceOption, type ReactSipAPI } from '@/types'
+import { type MediaDeviceOption, type ReactSipAPI } from '../types'
 import {
     type ICallStatus,
     type ICall,
@@ -13,11 +13,11 @@ import {
 } from '@voicenter-team/opensips-js/src/types/msrp'
 import OpenSIPSJS from '@voicenter-team/opensips-js'
 import { type MediaStream } from 'react-native-webrtc'
-import { type MediaDeviceInfo } from '@/types/media'
+import { type MediaDeviceInfo } from '../types/media'
 import { type MSRPMessageEventType } from '@voicenter-team/opensips-js/src/types/listeners'
 
 let openSIPSJS: OpenSIPSJS | undefined = undefined
-export const ReactSipContext = createContext<Partial<ReactSipAPI>>({})
+export const ReactSipContext = createContext<ReactSipAPI | undefined>(undefined)
 
 export const ReactSipProvider = ({ children, }: {
   children: React.ReactNode;
@@ -349,4 +349,12 @@ export const ReactSipProvider = ({ children, }: {
             {children}
         </ReactSipContext.Provider>
     )
+}
+
+export const useReactSip = (): ReactSipAPI => {
+    const context = useContext(ReactSipContext)
+    if (context === undefined) {
+        throw new Error('useReactSip must be used within a UserProvider')
+    }
+    return context
 }

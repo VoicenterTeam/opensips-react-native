@@ -7,4 +7,6 @@ export const redeclareGlobals = () => {
     registerGlobals()
 }
 
-export { ReactSipContext, ReactSipProvider } from './context'
+export {
+    ReactSipContext, ReactSipProvider, useReactSip 
+} from './context'

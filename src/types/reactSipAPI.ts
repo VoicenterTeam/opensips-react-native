@@ -9,6 +9,7 @@ import {
     IMessage,
 } from '@voicenter-team/opensips-js/src/types/msrp'
 import { type MediaStream } from 'react-native-webrtc'
+import { MediaDeviceInfo } from './media'
 
 export interface ReactSipAPI {
   state: ReactSipAPIState;

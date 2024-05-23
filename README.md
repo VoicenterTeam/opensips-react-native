@@ -4,7 +4,7 @@
 
 This library is a wrapper over the opensips-js implementation.
 It provides a React Native composable for reactive work with opensips-js functionality.
-Wrap your top level component in `ReactSipProvider`, call `redeclareGlobals` to declare global variables for webrtc and then use `ReactSipContext` in the child components to use reactive opensips-js functionality.
+Wrap your top level component in `ReactSipProvider`, call `redeclareGlobals` to declare global variables for webrtc and then use `useReactSip` hook in the child components to use reactive opensips-js functionality.
 
 
 ## Andoid Configuration
@@ -50,9 +50,9 @@ _MainComponent.tsx_
 
 ```js
 import React, { useContext } from 'react';
-import { ReactSipContext } from '@voicenter-team/react-native-opensips';
+import { useReactSip } from '@voicenter-team/react-native-opensips';
 export const MainComponent = () => {
-  const {actions, state} = useContext(ReactSipContext)
+  const {actions, state} = useReactSip()
   const {
     selectedInputDevice,
     selectedOutputDevice,

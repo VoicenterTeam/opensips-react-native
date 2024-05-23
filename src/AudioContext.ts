@@ -1,5 +1,5 @@
 import { MediaStream } from 'react-native-webrtc'
-import { AudioNode } from '@/types/media'
+import { AudioNode } from './types/media'
 
 export class AudioContext {
     private stream: MediaStream | null = null
