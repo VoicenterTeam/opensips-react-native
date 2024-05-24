@@ -14,7 +14,7 @@
     "library/*"
   ],
   "dependencies": {
-    "@voicenter-team/opensips-js": "^1.0.77",
+    "@voicenter-team/opensips-js": "^1.0.78",
     "core-js": "3.8.3",
     "react": "18.2.0",
     "react-native": "0.74.1",
