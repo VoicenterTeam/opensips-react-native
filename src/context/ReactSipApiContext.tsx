@@ -161,7 +161,7 @@ export const ReactSipProvider = ({ children, }: {
             speakerVolume: speakerVolume,
         },
         actions: {
-            init (domain, username, password, pcConfig) {
+            init (domain, username, password, pnExtraHeaders, pcConfig) {
                 try {
                     openSIPSJS = new OpenSIPSJS({
                         configuration: {
@@ -171,6 +171,7 @@ export const ReactSipProvider = ({ children, }: {
                         },
                         socketInterfaces: [ `wss://${domain}` ],
                         sipDomain: `${domain}`,
+                        pnExtraHeaders: pnExtraHeaders,
                         sipOptions: {
                             session_timers: false,
                             extraHeaders: [ 'X-Bar: bar' ],
@@ -264,6 +265,9 @@ export const ReactSipProvider = ({ children, }: {
                 } catch (e) {
                     console.error(e)
                 }
+            },
+            unregister () {
+                openSIPSJS?.unregister()
             },
             initCall (target: string, addToCurrentRoom = false) {
                 openSIPSJS?.audio.initCall(target, addToCurrentRoom)

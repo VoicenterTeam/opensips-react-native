@@ -2073,10 +2073,10 @@
   resolved "https://registry.yarnpkg.com/@voicenter-team/eslint-config-ts/-/eslint-config-ts-1.0.24.tgz#aa639b6539fa4d7811a936b78d11a5cd73f3b7fb"
   integrity sha512-bmN463CEUZE/ogSrh7BXcq0TPCbVQayJzfg9W9rU9ahB46MhfWWg5Pu9Yn46McRWOFjenndogVfvnHWy9gvLug==
 
-"@voicenter-team/opensips-js@^1.0.78":
-  version "1.0.78"
-  resolved "https://registry.yarnpkg.com/@voicenter-team/opensips-js/-/opensips-js-1.0.78.tgz#c73e8455e9b8bd3bd25987e2f98a09b078fa08a9"
-  integrity sha512-LGJSvdC/ffww8JQNyfJymIlGqJFlR05csJn5TdzAI7rOabUU9uuy9F2Y1NEusyVhdknPHYSSIQJ65/Bh57mQiQ==
+"@voicenter-team/opensips-js@^1.0.84":
+  version "1.0.84"
+  resolved "https://registry.yarnpkg.com/@voicenter-team/opensips-js/-/opensips-js-1.0.84.tgz#6446ef73ba697191168d4063f1e3045fc2391b83"
+  integrity sha512-OeDxOxYq/91oEVk4pMkbHWErMXpH0PkvODT1E99PLfQXHtiKzNi3vcee9LMI3nmIkkNWBfmsBI2Zmf3TVP/00g==
   dependencies:
     "@types/mime" "^3.0.1"
     generate-unique-id "^2.0.1"
@@ -2085,6 +2085,7 @@
     mime "^3.0.0"
     p-iteration "^1.1.8"
     sdp-transform "2.14.1"
+    uuid "^10.0.0"
 
 abort-controller@^3.0.0:
   version "3.0.0"
@@ -6234,6 +6235,11 @@ utils-merge@1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/utils-merge/-/utils-merge-1.0.1.tgz#9f95710f50a267947b2ccc124741c1028427e713"
   integrity sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==
+
+uuid@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-10.0.0.tgz#5a95aa454e6e002725c79055fd42aaba30ca6294"
+  integrity sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==
 
 vary@~1.1.2:
   version "1.1.2"

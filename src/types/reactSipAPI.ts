@@ -11,6 +11,12 @@ import {
 import { type MediaStream } from 'react-native-webrtc'
 import { MediaDeviceInfo } from './media'
 
+export type ExtraContactParams = {
+  'pn-provider': string,
+  'pn-param': string,
+  'pn-prid': string,
+}
+
 export interface ReactSipAPI {
   state: ReactSipAPIState;
   actions: ReactSipAPIActions;
@@ -66,8 +72,10 @@ export interface ReactSipAPIActions {
     domain: string,
     username: string,
     password: string,
+    pnExtraHeaders: ExtraContactParams,
     pcConfig?: IPCConfig
   ): void;
+  unregister: () => void;
   muteCaller: (callId: string) => void;
   unmuteCaller: (callId: string) => void;
   mute: () => void;
