@@ -10,3 +10,4 @@ export const redeclareGlobals = () => {
 export {
     ReactSipContext, ReactSipProvider, useReactSip 
 } from './context'
+export * from './types'

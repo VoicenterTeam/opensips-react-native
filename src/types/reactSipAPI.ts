@@ -1,6 +1,6 @@
 import {
     ICallStatus,
-    ICall,
+    ICall as ICall2,
     IRoom,
 } from '@voicenter-team/opensips-js/src/types/rtc'
 import { ITimeData } from '@voicenter-team/opensips-js/src/types/timer'
@@ -10,6 +10,11 @@ import {
 } from '@voicenter-team/opensips-js/src/types/msrp'
 import { type MediaStream } from 'react-native-webrtc'
 import { MediaDeviceInfo } from './media'
+
+export {type IRoom} from '@voicenter-team/opensips-js/src/types/rtc'
+
+export type ICall = ICall2
+
 
 export type ExtraContactParams = {
   'pn-provider': string,
@@ -66,7 +71,6 @@ type IceServeType = {
 interface IPCConfig {
   iceServers: IceServeType[];
 }
-
 export interface ReactSipAPIActions {
   init(
     domain: string,
@@ -101,4 +105,6 @@ export interface ReactSipAPIActions {
   setMicrophoneSensitivity: (value: number) => void;
   setSpeakerVolume: (value: number) => void;
   setAutoAnswer: (value: boolean) => void;
+  stop: () => void;
+  mergeCallByIds: (firstCallId: string, secondCallId: string) => void;
 }

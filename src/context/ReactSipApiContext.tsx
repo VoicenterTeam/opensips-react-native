@@ -347,6 +347,12 @@ export const ReactSipProvider = ({ children, }: {
             initMSRP (target: string, body: string, options: object) {
                 openSIPSJS?.msrp.initMSRP(target, body, options)
             },
+            stop () {
+                openSIPSJS?.stop()
+            },
+            mergeCallByIds(firstCallId: string, secondCallId: string) {
+                openSIPSJS?.audio.mergeCallByIds(firstCallId, secondCallId)
+            }
         },
     }
     return (
