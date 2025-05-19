@@ -1,6 +1,6 @@
 {
   "name": "@voicenter-team/react-native-opensips",
-  "version": "0.0.9",
+  "version": "0.0.44",
   "type": "module",
   "scripts": {
     "prepare": "bob build",
@@ -14,11 +14,9 @@
     "library/*"
   ],
   "dependencies": {
-    "@voicenter-team/opensips-js": "^1.0.88",
+    "@voicenter-team/opensips-js": "^1.0.139",
     "core-js": "3.8.3",
-    "react": "18.2.0",
-    "react-native": "0.74.1",
-    "react-native-webrtc": "^118.0.7"
+    "react-native-webrtc": "*"
   },
   "peerDependencies": {
     "react": "*",

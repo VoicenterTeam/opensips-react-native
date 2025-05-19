@@ -11,3 +11,5 @@ export {
     ReactSipContext, ReactSipProvider, useReactSip 
 } from './context'
 export * from './types'
+
+export { register } from './register'

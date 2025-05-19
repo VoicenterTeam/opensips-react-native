@@ -10,8 +10,9 @@ import {
 } from '@voicenter-team/opensips-js/src/types/msrp'
 import { type MediaStream } from 'react-native-webrtc'
 import { MediaDeviceInfo } from './media'
+import OpenSIPSJS from '@voicenter-team/opensips-js'
 
-export {type IRoom} from '@voicenter-team/opensips-js/src/types/rtc'
+export { type IRoom } from '@voicenter-team/opensips-js/src/types/rtc'
 
 export type ICall = ICall2
 
@@ -33,10 +34,17 @@ export interface InitConfig {
   password: string;
 }
 
+export enum ConnectionStausEnum {
+  CONNECTING = 'connecting',
+  CONNECTED = 'connected',
+  DISCONNECTED = 'disconnected'
+}
+
 export type MediaDeviceOption = Omit<MediaDeviceInfo, 'toJSON'>;
 
 export interface ReactSipAPIState {
   isInitialized: boolean;
+  connectionStatus: ConnectionStausEnum,
   activeCalls: { [key: string]: ICall };
   callsInActiveRoom: Array<ICall>;
   activeMessages: { [key: string]: IMessage };
@@ -60,6 +68,7 @@ export interface ReactSipAPIState {
   callStatus: { [key: string]: ICallStatus };
   callTime: { [key: string]: ITimeData };
   callMetrics: { [key: string]: unknown };
+  callWaiting: boolean;
 }
 
 type IceServeType = {
@@ -68,7 +77,7 @@ type IceServeType = {
   credential?: string;
 };
 
-interface IPCConfig {
+export interface IPCConfig {
   iceServers: IceServeType[];
 }
 export interface ReactSipAPIActions {
@@ -78,7 +87,8 @@ export interface ReactSipAPIActions {
     password: string,
     pnExtraHeaders: ExtraContactParams,
     pcConfig?: IPCConfig
-  ): void;
+  ): Promise<OpenSIPSJS | undefined>;
+  register(): void
   unregister: () => void;
   muteCaller: (callId: string) => void;
   unmuteCaller: (callId: string) => void;
@@ -105,6 +115,8 @@ export interface ReactSipAPIActions {
   setMicrophoneSensitivity: (value: number) => void;
   setSpeakerVolume: (value: number) => void;
   setAutoAnswer: (value: boolean) => void;
+  setCallWaiting: (value: boolean) => void;
   stop: () => void;
+  disconnect: () => void;
   mergeCallByIds: (firstCallId: string, secondCallId: string) => void;
 }

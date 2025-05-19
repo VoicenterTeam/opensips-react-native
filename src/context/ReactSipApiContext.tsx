@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 import { createContext, useEffect, useState } from 'react'
-import { type MediaDeviceOption, type ReactSipAPI } from '../types'
+import { ConnectionStausEnum, type MediaDeviceOption, type ReactSipAPI } from '../types'
 import {
     type ICallStatus,
     type ICall,
@@ -16,12 +16,13 @@ import { type MediaStream } from 'react-native-webrtc'
 import { type MediaDeviceInfo } from '../types/media'
 import { type MSRPMessageEventType } from '@voicenter-team/opensips-js/src/types/listeners'
 
-let openSIPSJS: OpenSIPSJS | undefined = undefined
+export let openSIPSJS: OpenSIPSJS | undefined = undefined
 export const ReactSipContext = createContext<ReactSipAPI | undefined>(undefined)
 
 export const ReactSipProvider = ({ children, }: {
   children: React.ReactNode;
 }) => {
+    const [ connectionStatus, setConnectionStatus ] = useState<ConnectionStausEnum>(ConnectionStausEnum.DISCONNECTED)
     const [ isInitialized, setInitialized ] = useState<boolean>(false)
     const [ activeCalls, setActiveCalls ] = useState<{ [key: string]: ICall }>({})
     const [ activeMessages, setActiveMessages ] = useState<{[key: string | number | symbol ]: IMessage}>({})
@@ -43,6 +44,7 @@ export const ReactSipProvider = ({ children, }: {
     )
     const [ currentActiveRoomId, setCurrentActiveRoomId ] = useState<number | undefined>(undefined)
     const [ autoAnswer, setAutoAnswer ] = useState<boolean>(false)
+    const [ callWaiting, setCallWaiting ] = useState<boolean>(true)
     const [ microphoneInputLevel, setMicrophoneInputLevel ] = useState<number>(1) // [0;1]
     const [ speakerVolume, setSpeakerVolume ] = useState<number>(1) // [0;1]
     const [ callStatus, setCallStatus ] = useState<{ [key: string]: ICallStatus }>(
@@ -115,10 +117,6 @@ export const ReactSipProvider = ({ children, }: {
     }, [ isDND ])
 
     useEffect(() => {
-        reactSipAPI.actions.setDND(isDND)
-    }, [ isDND ])
-
-    useEffect(() => {
         reactSipAPI.actions.setMicrophoneSensitivity(microphoneInputLevel)
     }, [ microphoneInputLevel ])
 
@@ -136,6 +134,7 @@ export const ReactSipProvider = ({ children, }: {
     const reactSipAPI: ReactSipAPI = {
         state: {
             isInitialized: isInitialized,
+            connectionStatus: connectionStatus,
             activeCalls: activeCalls,
             callsInActiveRoom,
             activeMessages: activeMessages,
@@ -159,151 +158,220 @@ export const ReactSipProvider = ({ children, }: {
             autoAnswer: autoAnswer,
             microphoneInputLevel,
             speakerVolume: speakerVolume,
+            callWaiting: callWaiting,
         },
         actions: {
             init (domain, username, password, pnExtraHeaders, pcConfig) {
-                try {
-                    openSIPSJS = new OpenSIPSJS({
-                        configuration: {
-                            session_timers: false,
-                            uri: `sip:${username}@${domain}`,
-                            password: password,
-                        },
-                        socketInterfaces: [ `wss://${domain}` ],
-                        sipDomain: `${domain}`,
-                        pnExtraHeaders: pnExtraHeaders,
-                        sipOptions: {
-                            session_timers: false,
-                            extraHeaders: [ 'X-Bar: bar' ],
-                            pcConfig: pcConfig ? pcConfig : {}
-                        },
-                        modules: ['audio']
-                    })
-                    /* openSIPSJS Listeners */
-                    openSIPSJS
-                        .on('ready', () => {
-                            setAddCallToCurrentRoom(false)
-                            setInitialized(true)
+                setConnectionStatus(ConnectionStausEnum.CONNECTING)
+                return new Promise((resolve, reject) => {
+                    try {
+                        openSIPSJS = new OpenSIPSJS({
+                            configuration: {
+                                session_timers: false,
+                                uri: `sip:${username}@${domain}`,
+                                password: password,
+                            },
+                            socketInterfaces: [ `wss://${domain}` ],
+                            sipDomain: `${domain}`,
+                            pnExtraHeaders: pnExtraHeaders,
+                            sipOptions: {
+                                session_timers: false,
+                                extraHeaders: [ 'X-Bar: bar' ],
+                                pcConfig: pcConfig ? pcConfig : {}
+                            },
+                            modules: [ 'audio' ]
                         })
-                        .on('changeActiveCalls', (sessions: { [key: string]: ICall }) => {
-                            console.log('changeActiveCalls', sessions)
-                            setActiveCalls({ ...sessions })
-                        })
-                        .on('changeActiveMessages', (sessions) => {
-                            setActiveMessages({ ...sessions } as { [key: string]: IMessage })
-                        })
-                        .on(
-                            'newMSRPMessage',
-                            (data: MSRPMessageEventType) => {
-                                const sessionId = data.session._id
-                                const sessionMessages = msrpHistory[sessionId] || []
-                                sessionMessages.push(data.message)
-                                setMsrpHistory((prev) => ({
-                                    ...prev,
-                                    [sessionId]: [ ...sessionMessages ],
-                                }))
-                            }
-                        )
-                        .on('callAddingInProgressChanged', (value: string | undefined) => {
-                            setCallAddingInProgress(value)
-                        })
-                        .on(
-                            'changeAvailableDeviceList',
-                            (devices) => {
-                                setAvailableMediaDevices([ ...devices ])
-                            }
-                        )
-                        .on('changeActiveInputMediaDevice', (data: string) => {
-                            setSelectedInputDevice(data)
-                        })
-                        .on('changeActiveOutputMediaDevice', (data: string) => {
-                            setSelectedOutputDevice(data)
-                        })
-                        .on('changeMuteWhenJoin', (value: boolean) => {
-                            setMuteWhenJoin(value)
-                        })
-                        .on('changeIsDND', (value: boolean) => {
-                            setIsDnd(value)
-                        })
-                        .on('changeIsMuted', (value: boolean) => {
-                            setIsMuted(value)
-                        })
-                        .on('changeActiveStream', (value) => {
-                            setOriginalStream(value)
-                        })
-                        .on('currentActiveRoomChanged', (id: number | undefined) => {
-                            setCurrentActiveRoomId(id)
-                        })
-                        .on(
-                            'addRoom',
-                            ({ roomList }: { roomList: { [key: number]: IRoom } }) => {
-                                setActiveRooms({ ...roomList })
-                            }
-                        )
-                        .on(
-                            'updateRoom',
-                            ({ roomList }: { roomList: { [key: number]: IRoom } }) => {
-                                setActiveRooms({ ...roomList })
-                            }
-                        )
-                        .on(
-                            'removeRoom',
-                            ({ roomList }: { roomList: { [key: number]: IRoom } }) => {
-                                setActiveRooms({ ...roomList })
-                            }
-                        )
-                        .on('changeCallStatus', (data: { [key: string]: ICallStatus }) => {
-                            setCallStatus({ ...data })
-                        })
-                        .on('changeCallTime', (data: { [key: string]: ITimeData }) => {
-                            setCallTime({ ...data })
-                        })
-                        .on('changeCallMetrics', (data: { [key: string]: unknown }) => {
-                            setCallMetrics({ ...data })
-                        })
-                        .begin()
-                } catch (e) {
-                    console.error(e)
-                }
+                        /* openSIPSJS Listeners */
+                        openSIPSJS
+                            .on('ready', () => {
+                                setAddCallToCurrentRoom(false)
+                                setInitialized(true)
+                                resolve(openSIPSJS)
+                            })
+                            .on('changeActiveCalls', (sessions: { [key: string]: ICall }) => {
+                                console.log('changeActiveCalls', sessions)
+                                setActiveCalls({ ...sessions })
+                            })
+                            .on('changeActiveMessages', (sessions) => {
+                                setActiveMessages({ ...sessions } as { [key: string]: IMessage })
+                            })
+                            .on(
+                                'newMSRPMessage',
+                                (data: MSRPMessageEventType) => {
+                                    const sessionId = data.session._id
+                                    const sessionMessages = msrpHistory[sessionId] || []
+                                    sessionMessages.push(data.message)
+                                    setMsrpHistory((prev) => ({
+                                        ...prev,
+                                        [sessionId]: [ ...sessionMessages ],
+                                    }))
+                                }
+                            )
+                            .on('callAddingInProgressChanged', (value: string | undefined) => {
+                                setCallAddingInProgress(value)
+                            })
+                            .on(
+                                'changeAvailableDeviceList',
+                                (devices) => {
+                                    setAvailableMediaDevices([ ...devices ])
+                                }
+                            )
+                            .on('changeActiveInputMediaDevice', (data: string) => {
+                                setSelectedInputDevice(data)
+                            })
+                            .on('changeActiveOutputMediaDevice', (data: string) => {
+                                setSelectedOutputDevice(data)
+                            })
+                            .on('changeMuteWhenJoin', (value: boolean) => {
+                                setMuteWhenJoin(value)
+                            })
+                            .on('changeIsDND', (value: boolean) => {
+                                setIsDnd(value)
+                            })
+                            .on('changeIsMuted', (value: boolean) => {
+                                setIsMuted(value)
+                            })
+                            .on('changeActiveStream', (value) => {
+                                setOriginalStream(value)
+                            })
+                            .on('currentActiveRoomChanged', (id: number | undefined) => {
+                                setCurrentActiveRoomId(id)
+                            })
+                            .on(
+                                'addRoom',
+                                ({ roomList }: { roomList: { [key: number]: IRoom } }) => {
+                                    setActiveRooms({ ...roomList })
+                                }
+                            )
+                            .on(
+                                'updateRoom',
+                                ({ roomList }: { roomList: { [key: number]: IRoom } }) => {
+                                    setActiveRooms({ ...roomList })
+                                }
+                            )
+                            .on(
+                                'removeRoom',
+                                ({ roomList }: { roomList: { [key: number]: IRoom } }) => {
+                                    setActiveRooms({ ...roomList })
+                                }
+                            )
+                            .on('changeCallStatus', (data: { [key: string]: ICallStatus }) => {
+                                setCallStatus({ ...data })
+                            })
+                            .on('changeCallTime', (data: { [key: string]: ITimeData }) => {
+                                setCallTime({ ...data })
+                            })
+                            .on('changeCallMetrics', (data: { [key: string]: unknown }) => {
+                                console.log('ReactOpenSips: call metrics changed: ', data)
+                                setCallMetrics({ ...data })
+                            })
+                            .on('connecting', () => {
+                                setConnectionStatus(ConnectionStausEnum.CONNECTING)
+                            })
+                            .on('connection', (status) => {
+                                console.log('status', status)
+                                if(status) {
+                                    setConnectionStatus(ConnectionStausEnum.CONNECTED)
+                                } else {
+                                    setConnectionStatus(ConnectionStausEnum.DISCONNECTED)
+                                }
+                            })
+                            .begin()
+                    } catch (e) {
+                        reject()
+                        console.error(e)
+                    }
+                })
             },
             unregister () {
                 openSIPSJS?.unregister()
             },
+            register () { 
+                openSIPSJS?.register()
+            },
             initCall (target: string, addToCurrentRoom = false) {
-                openSIPSJS?.audio.initCall(target, addToCurrentRoom)
+                try {
+                    openSIPSJS?.audio.initCall(target, addToCurrentRoom)
+                } catch (error) {
+                    console.warn(error, 'Init call error')
+                }
             },
             answerCall (callId: string) {
-                openSIPSJS?.audio.answerCall(callId)
+                try {
+                    openSIPSJS?.audio.answerCall(callId)
+                } catch (error) {
+                    console.warn(error, 'Answer call error')
+                }
             },
             terminateCall (callId: string) {
-                openSIPSJS?.audio.terminateCall(callId)
+                try {
+                    openSIPSJS?.audio.terminateCall(callId)
+                } catch (error) {
+                    console.warn(error, 'Terminate call error')
+                }
             },
             mute () {
-                openSIPSJS?.audio.mute()
+                try {
+                    openSIPSJS?.audio.mute()
+                } catch (error) {
+                    console.warn(error, 'Mute error')
+                }
             },
             unmute () {
-                openSIPSJS?.audio.unmute()
+                try {
+                    openSIPSJS?.audio.unmute()
+                } catch (error) {
+                    console.warn(error, 'Unmute error')
+                }
             },
             transferCall (callId: string, target: string) {
-                openSIPSJS?.audio.transferCall(callId, target)
+                try {
+                    openSIPSJS?.audio.transferCall(callId, target)
+                } catch (error) {
+                    console.warn(error, 'Transfer call error')
+                }
             },
             mergeCall (roomId: number) {
-                openSIPSJS?.audio.mergeCall(roomId)
+                try {
+                    openSIPSJS?.audio.mergeCall(roomId)
+                } catch (error) {
+                    console.warn(error, 'Merge call error')
+                }
             },
             holdCall (callId: string, automatic?: boolean) {
-                openSIPSJS?.audio.holdCall(callId, automatic)
+                try {
+                    openSIPSJS?.audio.holdCall(callId, automatic)
+                } catch (error) {
+                    console.warn(error, 'Hold call error')
+                }
             },
             unholdCall (callId: string) {
-                openSIPSJS?.audio.unholdCall(callId)
+                try {
+                    openSIPSJS?.audio.unholdCall(callId)
+                } catch (error) {
+                    console.warn(error, 'Unhold call error')
+                }
             },
             async moveCall (callId: string, roomId: number) {
-                await openSIPSJS?.audio.moveCall(callId, roomId)
+                try {
+                    await openSIPSJS?.audio.moveCall(callId, roomId)
+                } catch (error) {
+                    console.warn(error, 'Move call error')
+                }
             },
             muteCaller (callId: string) {
-                openSIPSJS?.audio.muteCaller(callId)
+                try {
+                    openSIPSJS?.audio.muteCaller(callId)
+                } catch (error) {
+                    console.warn(error, 'Mute caller error')
+                }
             },
             unmuteCaller (callId: string) {
-                openSIPSJS?.audio.unmuteCaller(callId)
+                try {
+                    openSIPSJS?.audio.unmuteCaller(callId)
+                } catch (error) {
+                    console.warn(error, 'Unmute caller error')
+                }
             },
             setMuteWhenJoin (state: boolean) {
                 openSIPSJS?.audio.setMuteWhenJoin(state)
@@ -318,10 +386,18 @@ export const ReactSipProvider = ({ children, }: {
                 await openSIPSJS?.audio.setSpeaker(deviceId)
             },
             sendDTMF (callId: string, value: string) {
-                openSIPSJS?.audio.sendDTMF(callId, value)
+                try {
+                    openSIPSJS?.audio.sendDTMF(callId, value)
+                } catch (error) {
+                    console.warn(error, 'DTMF error')
+                }
             },
             async setActiveRoom (roomId: number | undefined) {
-                await openSIPSJS?.audio.setActiveRoom(roomId)
+                try {
+                    await openSIPSJS?.audio.setActiveRoom(roomId)
+                } catch (error) {
+                    console.warn(error, 'Set active room error')
+                }
             },
             setMicrophoneSensitivity (value: number) {
                 setMicrophoneInputLevel(value)
@@ -350,9 +426,20 @@ export const ReactSipProvider = ({ children, }: {
             stop () {
                 openSIPSJS?.stop()
             },
-            mergeCallByIds(firstCallId: string, secondCallId: string) {
-                openSIPSJS?.audio.mergeCallByIds(firstCallId, secondCallId)
-            }
+            mergeCallByIds (firstCallId: string, secondCallId: string) {
+                try {
+                    openSIPSJS?.audio.mergeCallByIds(firstCallId, secondCallId)
+                } catch (error) {
+                    console.warn(error, 'Merge calls by ids error')
+                }
+            },
+            setCallWaiting (value: boolean) {
+                setCallWaiting(value)
+                openSIPSJS?.audio.setCallWaiting(value)
+            },
+            disconnect () {
+                openSIPSJS?.disconnect()
+            },
         },
     }
     return (
