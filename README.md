@@ -122,6 +122,7 @@ export const MainComponent = () => {
 
 | Name                     | Interface                                                                    | Description                                                      |
 | ------------------------ |:-----------------------------------------------------------------------------|:-----------------------------------------------------------------|
+| init                     | (domain: string, username: string, password: string): void                   | Initialize opensips-js                                           |
 | initCall                 | (target: string, addToCurrentRoom: boolean, holdOtherCalls: boolean) => void | Make a call                                                      |
 | answerCall               | (callId: string) => void                                                     | Answer call                                                      |
 | terminateCall            | (callId: string) => void                                                     | Hangup call                                                      |
