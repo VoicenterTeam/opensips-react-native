@@ -11,6 +11,7 @@ import {
     IMessage,
     MSRPMessage,
 } from '@voicenter-team/opensips-js/src/types/msrp'
+import { WebrtcMetricsConfigType } from '@voicenter-team/opensips-js/src/types/webrtcmetrics'
 import OpenSIPSJS from '@voicenter-team/opensips-js'
 import { type MediaStream } from 'react-native-webrtc'
 import { type MediaDeviceInfo } from '../types/media'
@@ -286,12 +287,12 @@ export const ReactSipProvider = ({ children, }: {
             unregister () {
                 openSIPSJS?.unregister()
             },
-            register () { 
+            register () {
                 openSIPSJS?.register()
             },
-            initCall (target: string, addToCurrentRoom = false) {
+            initCall (target: string, addToCurrentRoom = false, holdOtherCalls = false) {
                 try {
-                    openSIPSJS?.audio.initCall(target, addToCurrentRoom)
+                    openSIPSJS?.audio.initCall(target, addToCurrentRoom, holdOtherCalls)
                 } catch (error) {
                     console.warn(error, 'Init call error')
                 }
@@ -439,6 +440,9 @@ export const ReactSipProvider = ({ children, }: {
             },
             disconnect () {
                 openSIPSJS?.disconnect()
+            },
+            setMetricsConfig (config: WebrtcMetricsConfigType) {
+                openSIPSJS?.audio.setMetricsConfig(config)
             },
         },
     }

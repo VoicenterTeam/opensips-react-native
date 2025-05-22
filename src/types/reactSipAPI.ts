@@ -8,6 +8,7 @@ import {
     MSRPMessage,
     IMessage,
 } from '@voicenter-team/opensips-js/src/types/msrp'
+import { WebrtcMetricsConfigType } from '@voicenter-team/opensips-js/src/types/webrtcmetrics'
 import { type MediaStream } from 'react-native-webrtc'
 import { MediaDeviceInfo } from './media'
 import OpenSIPSJS from '@voicenter-team/opensips-js'
@@ -119,4 +120,5 @@ export interface ReactSipAPIActions {
   stop: () => void;
   disconnect: () => void;
   mergeCallByIds: (firstCallId: string, secondCallId: string) => void;
+  setMetricsConfig: (config: WebrtcMetricsConfigType) => void;
 }

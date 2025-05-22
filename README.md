@@ -120,30 +120,45 @@ export const MainComponent = () => {
 
 ### Methods
 
-| Name                     | Interface                                                  | Description                                                      |
-| ------------------------ | :--------------------------------------------------------- | :--------------------------------------------------------------- |
-| init                     | (domain: string, username: string, password: string): void | Initialize opensips-js                                           |
-| initCall                 | (target: string, addToCurrentRoom: boolean) => void        | Make a call                                                      |
-| answerCall               | (callId: string) => void                                   | Answer call                                                      |
-| terminateCall            | (callId: string) => void                                   | Hangup call                                                      |
-| muteCaller               | (callId: string) => void                                   | Mute caller                                                      |
-| unmuteCaller             | (callId: string) => void                                   | Unmute caller                                                    |
-| mute                     | () => void                                                 | Mute ourself                                                     |
-| unmute                   | () => void                                                 | Unmute ourself                                                   |
-| transferCall             | (callId: string, target: string) => void                   | Transfer call                                                    |
-| mergeCall                | (roomId: number) => void                                   | Merge calls in room (works only when 2 call in room)             |
-| holdCall                 | (callId: string, automatic?: boolean) => void              | Hold a call                                                      |
-| unholdCall               | (callId: string) => void                                   | Unhold a call                                                    |
-| moveCall                 | (callId: string, roomId: number) => Promise\<void>         | Move call to another room                                        |
-| setMicrophone            | (deviceId: string) => Promise\<void>                       | Set microphone which to use                                      |
-| setSpeaker               | (deviceId: string) => Promise\<void>                       | Set speaker which to use                                         |
-| sendDTMF                 | (callId: string, value: string) => void                    | Send DTMF                                                        |
-| setActiveRoom            | (roomId: number / undefined) => Promise\<void>             | Set current active room                                          |
-| setMicrophoneSensitivity | (value: number) => void                                    | Set microphone sensitivity. Value should be in range from 0 to 1 |
-| setSpeakerVolume         | (value: number) => void                                    | Set speaker volume. Value should be in range from 0 to 1         |
-| setAutoAnswer            | (value: boolean) => void                                   | Set auto-answer                                                  |
-| setDND                   | (state: boolean) => void                                   | Set 'Do not Disturb' option                                      |
-| msrpAnswer               | (callId: string) => void                                   | Answer MSRP invite                                               |
-| messageTerminate         | (callId: string) => void                                   | Terminate MSRP session                                           |
-| sendMSRP                 | (msrpSessionId: string, body: string) => void              | Send MSRP message                                                |
-| initMSRP                 | (target: string, body: string, options: object) => void    | Send MSRP invite                                                 |
+| Name                     | Interface                                                                    | Description                                                      |
+| ------------------------ |:-----------------------------------------------------------------------------|:-----------------------------------------------------------------|
+| initCall                 | (target: string, addToCurrentRoom: boolean, holdOtherCalls: boolean) => void | Make a call                                                      |
+| answerCall               | (callId: string) => void                                                     | Answer call                                                      |
+| terminateCall            | (callId: string) => void                                                     | Hangup call                                                      |
+| muteCaller               | (callId: string) => void                                                     | Mute caller                                                      |
+| unmuteCaller             | (callId: string) => void                                                     | Unmute caller                                                    |
+| mute                     | () => void                                                                   | Mute ourself                                                     |
+| unmute                   | () => void                                                                   | Unmute ourself                                                   |
+| transferCall             | (callId: string, target: string) => void                                     | Transfer call                                                    |
+| mergeCall                | (roomId: number) => void                                                     | Merge calls in room (works only when 2 call in room)             |
+| mergeCallByIds           | (firstCallId: string, secondCallId: string) => void                          | Merge 2 calls by their ids                                       |
+| holdCall                 | (callId: string, automatic?: boolean) => void                                | Hold a call                                                      |
+| unholdCall               | (callId: string) => void                                                     | Unhold a call                                                    |
+| moveCall                 | (callId: string, roomId: number) => Promise\<void>                           | Move call to another room                                        |
+| setMicrophone            | (deviceId: string) => Promise\<void>                                         | Set microphone which to use                                      |
+| setSpeaker               | (deviceId: string) => Promise\<void>                                         | Set speaker which to use                                         |
+| sendDTMF                 | (callId: string, value: string) => void                                      | Send DTMF                                                        |
+| setActiveRoom            | (roomId: number / undefined) => Promise\<void>                               | Set current active room                                          |
+| setMicrophoneSensitivity | (value: number) => void                                                      | Set microphone sensitivity. Value should be in range from 0 to 1 |
+| setSpeakerVolume         | (value: number) => void                                                      | Set speaker volume. Value should be in range from 0 to 1         |
+| setAutoAnswer            | (value: boolean) => void                                                     | Set auto-answer                                                  |
+| setDND                   | (state: boolean) => void                                                     | Set 'Do not Disturb' option                                      |
+| setMetricsConfig         | (config: WebrtcMetricsConfigType) => void                                    | Set the metric config (used for audio quality indicator)         |
+| msrpAnswer               | (callId: string) => void                                                     | Answer MSRP invite                                               |
+| messageTerminate         | (callId: string) => void                                                     | Terminate MSRP session                                           |
+| sendMSRP                 | (msrpSessionId: string, body: string) => void                                | Send MSRP message                                                |
+| initMSRP                 | (target: string, body: string, options: object) => void                      | Send MSRP invite                                                 |
+
+### WebrtcMetricsConfigType
+
+| Parameter      | Type      | Default     |
+|----------------|-----------|-------------|
+| `refreshEvery` | `number`  | `undefined` |
+| `startAfter`   | `number`  | `undefined` |
+| `startAfter`   | `number`  | `undefined` |
+| `verbose`      | `boolean` | `undefined` |
+| `pname`        | `string`  | `undefined` |
+| `cid`          | `string`  | `undefined` |
+| `uid`          | `string`  | `undefined` |
+| `record`       | `boolean` | `undefined` |
+| `ticket`       | `boolean` | `undefined` |
