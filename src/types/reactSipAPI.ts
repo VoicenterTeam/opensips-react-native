@@ -17,6 +17,7 @@ export { type IRoom } from '@voicenter-team/opensips-js/src/types/rtc'
 
 export type ICall = ICall2
 
+export type OnTransportCallback = (parsed: object, message: string) => void
 
 export type ExtraContactParams = {
   'pn-provider': string,
@@ -87,7 +88,8 @@ export interface ReactSipAPIActions {
     username: string,
     password: string,
     pnExtraHeaders: ExtraContactParams,
-    pcConfig?: IPCConfig
+    pcConfig?: IPCConfig,
+    onTransportCallback?: OnTransportCallback
   ): Promise<OpenSIPSJS | undefined>;
   register(): void
   unregister: () => void;

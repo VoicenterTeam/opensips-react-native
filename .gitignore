@@ -6,7 +6,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-
+.yarnrc.yml
 node_modules
 dist
 dist-ssr
@@ -21,7 +21,8 @@ dist-ssr
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
+*.sw?git show --name-status
+
 
 library/*
 

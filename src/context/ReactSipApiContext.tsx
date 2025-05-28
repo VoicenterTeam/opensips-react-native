@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useContext, useMemo } from 'react'
 import { createContext, useEffect, useState } from 'react'
 import { ConnectionStausEnum, type MediaDeviceOption, type ReactSipAPI } from '../types'
 import {
@@ -25,12 +25,12 @@ export const ReactSipProvider = ({ children, }: {
 }) => {
     const [ connectionStatus, setConnectionStatus ] = useState<ConnectionStausEnum>(ConnectionStausEnum.DISCONNECTED)
     const [ isInitialized, setInitialized ] = useState<boolean>(false)
-    const [ activeCalls, setActiveCalls ] = useState<{ [key: string]: ICall }>({})
+    const [ allCalls, setAllCalls ] = useState<{ [key: string]: ICall }>({})
     const [ activeMessages, setActiveMessages ] = useState<{[key: string | number | symbol ]: IMessage}>({})
     const [ addCallToCurrentRoom, setAddCallToCurrentRoom ] =
     useState<boolean>(false)
     const [ callAddingInProgress, setCallAddingInProgress ] = useState<string | undefined>(undefined)
-    const [ activeRooms, setActiveRooms ] = useState<{ [key: number]: IRoom }>({})
+    const [ allRooms, setAllRooms ] = useState<{ [key: number]: IRoom }>({})
     const [ msrpHistory, setMsrpHistory ] = useState<{[key: string]: Array<MSRPMessage>;}>({})
     const [ availableMediaDevices, setAvailableMediaDevices ] = useState<Array<MediaDeviceInfo>>([])
     const [ selectedOutputDevice, setSelectedOutputDevice ] =
@@ -58,6 +58,37 @@ export const ReactSipProvider = ({ children, }: {
     const [ callsInActiveRoom, setCallsInActiveRooms ] = useState<ICall[]>([])
     const [ outputMediaDeviceList, setOutputMediaDeviceList ] = useState<MediaDeviceOption[]>([])
     const [ inputMediaDeviceList, setInputMediaDeviceList ] = useState<MediaDeviceOption[]>([])
+
+    const activeCalls = useMemo(() => {
+        const calls: { [key: string]: ICall } = {}
+        Object.entries(allCalls.value).forEach(([ key, value ]) => {
+            if (!callStatus[key]?.isTransferred) {
+                calls[key] = value
+            }
+        })
+    
+        return calls
+    }, [ allCalls ])
+
+    const activeRooms = useMemo(() => {
+        const rooms: { [key: number | string]: IRoom } = {}
+
+        const callRoomIds = Object.values(activeCalls).map((call) => {
+            return call.roomId
+        })
+        Object.entries(allRooms).forEach(([ key, value ]) => {
+            if (callRoomIds.includes(value.roomId)) {
+                rooms[key] = value
+            }
+        })
+        return rooms
+    }, [ allRooms ])
+
+    useEffect(() => {
+        if (!callsInActiveRoom.length && currentActiveRoomId) {
+            setCurrentActiveRoomId(undefined)
+        }
+    }, [ callsInActiveRoom ])
 
     useEffect(() => {
         if (activeCalls && currentActiveRoomId) {
@@ -162,7 +193,7 @@ export const ReactSipProvider = ({ children, }: {
             callWaiting: callWaiting,
         },
         actions: {
-            init (domain, username, password, pnExtraHeaders, pcConfig) {
+            init (domain, username, password, pnExtraHeaders, pcConfig, onTransportCallback) {
                 setConnectionStatus(ConnectionStausEnum.CONNECTING)
                 return new Promise((resolve, reject) => {
                     try {
@@ -171,6 +202,7 @@ export const ReactSipProvider = ({ children, }: {
                                 session_timers: false,
                                 uri: `sip:${username}@${domain}`,
                                 password: password,
+                                onTransportCallback
                             },
                             socketInterfaces: [ `wss://${domain}` ],
                             sipDomain: `${domain}`,
@@ -191,7 +223,7 @@ export const ReactSipProvider = ({ children, }: {
                             })
                             .on('changeActiveCalls', (sessions: { [key: string]: ICall }) => {
                                 console.log('changeActiveCalls', sessions)
-                                setActiveCalls({ ...sessions })
+                                setAllCalls({ ...sessions })
                             })
                             .on('changeActiveMessages', (sessions) => {
                                 setActiveMessages({ ...sessions } as { [key: string]: IMessage })
@@ -241,19 +273,19 @@ export const ReactSipProvider = ({ children, }: {
                             .on(
                                 'addRoom',
                                 ({ roomList }: { roomList: { [key: number]: IRoom } }) => {
-                                    setActiveRooms({ ...roomList })
+                                    setAllRooms({ ...roomList })
                                 }
                             )
                             .on(
                                 'updateRoom',
                                 ({ roomList }: { roomList: { [key: number]: IRoom } }) => {
-                                    setActiveRooms({ ...roomList })
+                                    setAllRooms({ ...roomList })
                                 }
                             )
                             .on(
                                 'removeRoom',
                                 ({ roomList }: { roomList: { [key: number]: IRoom } }) => {
-                                    setActiveRooms({ ...roomList })
+                                    setAllRooms({ ...roomList })
                                 }
                             )
                             .on('changeCallStatus', (data: { [key: string]: ICallStatus }) => {
