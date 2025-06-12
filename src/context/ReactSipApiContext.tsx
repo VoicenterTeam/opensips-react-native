@@ -5,17 +5,17 @@ import {
     type ICallStatus,
     type ICall,
     type IRoom,
-} from '@voicenter-team/opensips-js/src/types/rtc'
-import { type ITimeData } from '@voicenter-team/opensips-js/src/types/timer'
+} from 'opensips-js/src/types/rtc'
+import { type ITimeData } from 'opensips-js/src/types/timer'
 import {
     IMessage,
     MSRPMessage,
-} from '@voicenter-team/opensips-js/src/types/msrp'
-import { WebrtcMetricsConfigType } from '@voicenter-team/opensips-js/src/types/webrtcmetrics'
-import OpenSIPSJS from '@voicenter-team/opensips-js'
+} from 'opensips-js/src/types/msrp'
+import { WebrtcMetricsConfigType } from 'opensips-js/src/types/webrtcmetrics'
+import OpenSIPSJS from 'opensips-js'
 import { type MediaStream } from 'react-native-webrtc'
 import { type MediaDeviceInfo } from '../types/media'
-import { type MSRPMessageEventType } from '@voicenter-team/opensips-js/src/types/listeners'
+import { type MSRPMessageEventType } from 'opensips-js/src/types/listeners'
 
 export let openSIPSJS: OpenSIPSJS | undefined = undefined
 export const ReactSipContext = createContext<ReactSipAPI | undefined>(undefined)
@@ -66,7 +66,7 @@ export const ReactSipProvider = ({ children, }: {
                 calls[key] = value
             }
         })
-    
+
         return calls
     }, [ allCalls ])
 

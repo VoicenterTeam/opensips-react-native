@@ -2,18 +2,18 @@ import {
     ICallStatus,
     ICall as ICall2,
     IRoom,
-} from '@voicenter-team/opensips-js/src/types/rtc'
-import { ITimeData } from '@voicenter-team/opensips-js/src/types/timer'
+} from 'opensips-js/src/types/rtc'
+import { ITimeData } from 'opensips-js/src/types/timer'
 import {
     MSRPMessage,
     IMessage,
-} from '@voicenter-team/opensips-js/src/types/msrp'
-import { WebrtcMetricsConfigType } from '@voicenter-team/opensips-js/src/types/webrtcmetrics'
+} from 'opensips-js/src/types/msrp'
+import { WebrtcMetricsConfigType } from 'opensips-js/src/types/webrtcmetrics'
 import { type MediaStream } from 'react-native-webrtc'
 import { MediaDeviceInfo } from './media'
-import OpenSIPSJS from '@voicenter-team/opensips-js'
+import OpenSIPSJS from 'opensips-js'
 
-export { type IRoom } from '@voicenter-team/opensips-js/src/types/rtc'
+export { type IRoom } from 'opensips-js/src/types/rtc'
 
 export type ICall = ICall2
 

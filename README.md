@@ -35,7 +35,7 @@ _App.tsx_
 import {
   ReactSipProvider,
   redeclareGlobals,
-} from "@voicenter-team/react-native-opensips";
+} from "react-native-opensips";
 redeclareGlobals();
 export const App = (): JSX.Element => {
   return (
@@ -50,7 +50,7 @@ _MainComponent.tsx_
 
 ```js
 import React, { useContext } from 'react';
-import { useReactSip } from '@voicenter-team/react-native-opensips';
+import { useReactSip } from 'react-native-opensips';
 export const MainComponent = () => {
   const {actions, state} = useReactSip()
   const {
