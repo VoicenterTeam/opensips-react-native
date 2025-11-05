@@ -74,4 +74,7 @@ export class AudioContext {
             connect: function (destinationNode: AudioNode, output?: number, input?: number) {},
         }
     }
+    async resume (): Promise<void> {
+        return
+    }
 }

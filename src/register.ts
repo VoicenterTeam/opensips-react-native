@@ -1,4 +1,4 @@
-import OpenSIPSJS from '@voicenter-team/opensips-js'
+import OpenSIPSJS from 'opensips-js'
 import { ExtraContactParams, IPCConfig } from './types'
 
 export const register = (

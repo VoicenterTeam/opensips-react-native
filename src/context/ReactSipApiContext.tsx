@@ -1,42 +1,41 @@
-import React, { useContext, useMemo } from 'react'
+import React, { useContext } from 'react'
 import { createContext, useEffect, useState } from 'react'
 import { ConnectionStausEnum, type MediaDeviceOption, type ReactSipAPI } from '../types'
 import {
     type ICallStatus,
     type ICall,
     type IRoom,
-} from '@voicenter-team/opensips-js/src/types/rtc'
-import { type ITimeData } from '@voicenter-team/opensips-js/src/types/timer'
+} from 'opensips-js/src/types/rtc'
+import { type ITimeData } from 'opensips-js/src/types/timer'
 import {
     IMessage,
     MSRPMessage,
-} from '@voicenter-team/opensips-js/src/types/msrp'
-import { WebrtcMetricsConfigType } from '@voicenter-team/opensips-js/src/types/webrtcmetrics'
-import OpenSIPSJS from '@voicenter-team/opensips-js'
+} from 'opensips-js/src/types/msrp'
+import { WebrtcMetricsConfigType } from 'opensips-js/src/types/webrtcmetrics'
+import OpenSIPSJS from 'opensips-js'
 import { type MediaStream } from 'react-native-webrtc'
 import { type MediaDeviceInfo } from '../types/media'
-import { type MSRPMessageEventType } from '@voicenter-team/opensips-js/src/types/listeners'
+import { type MSRPMessageEventType } from 'opensips-js/src/types/listeners'
 
 export let openSIPSJS: OpenSIPSJS | undefined = undefined
 export const ReactSipContext = createContext<ReactSipAPI | undefined>(undefined)
 
 export const ReactSipProvider = ({ children, }: {
-  children: React.ReactNode;
+    children: React.ReactNode;
 }) => {
     const [ connectionStatus, setConnectionStatus ] = useState<ConnectionStausEnum>(ConnectionStausEnum.DISCONNECTED)
     const [ isInitialized, setInitialized ] = useState<boolean>(false)
     const [ allCalls, setAllCalls ] = useState<{ [key: string]: ICall }>({})
-    const [ activeMessages, setActiveMessages ] = useState<{[key: string | number | symbol ]: IMessage}>({})
+    const [ activeMessages, setActiveMessages ] = useState<{ [key: string | number | symbol]: IMessage }>({})
     const [ addCallToCurrentRoom, setAddCallToCurrentRoom ] =
-    useState<boolean>(false)
+        useState<boolean>(false)
     const [ callAddingInProgress, setCallAddingInProgress ] = useState<string | undefined>(undefined)
-    const [ allRooms, setAllRooms ] = useState<{ [key: number]: IRoom }>({})
-    const [ msrpHistory, setMsrpHistory ] = useState<{[key: string]: Array<MSRPMessage>;}>({})
+    const [ allRooms, setAllRooms ] = useState<{ [key: number | string]: IRoom }>({})
+    const [ msrpHistory, setMsrpHistory ] = useState<{ [key: string]: Array<MSRPMessage>; }>({})
     const [ availableMediaDevices, setAvailableMediaDevices ] = useState<Array<MediaDeviceInfo>>([])
     const [ selectedOutputDevice, setSelectedOutputDevice ] =
-    useState<string>('default')
-    const [ selectedInputDevice, setSelectedInputDevice ] =
-    useState<string>('default')
+        useState<string>('default')
+    const [ selectedInputDevice, setSelectedInputDevice ] = useState<string>('default')
     const [ muteWhenJoin, setMuteWhenJoin ] = useState<boolean>(false)
     const [ isDND, setIsDnd ] = useState<boolean>(false)
     const [ isMuted, setIsMuted ] = useState<boolean>(false)
@@ -55,24 +54,21 @@ export const ReactSipProvider = ({ children, }: {
     const [ callMetrics, setCallMetrics ] = useState<{ [key: string]: unknown }>(
         {}
     )
-    const [ callsInActiveRoom, setCallsInActiveRooms ] = useState<ICall[]>([])
     const [ outputMediaDeviceList, setOutputMediaDeviceList ] = useState<MediaDeviceOption[]>([])
     const [ inputMediaDeviceList, setInputMediaDeviceList ] = useState<MediaDeviceOption[]>([])
 
-    const activeCalls = useMemo(() => {
+    const activeCalls = React.useMemo(() => {
         const calls: { [key: string]: ICall } = {}
-        Object.entries(allCalls.value).forEach(([ key, value ]) => {
+        Object.entries(allCalls).forEach(([ key, value ]) => {
             if (!callStatus[key]?.isTransferred) {
                 calls[key] = value
             }
         })
-    
         return calls
-    }, [ allCalls ])
+    }, [ allCalls, callStatus ])
 
-    const activeRooms = useMemo(() => {
+    const activeRooms = React.useMemo(() => {
         const rooms: { [key: number | string]: IRoom } = {}
-
         const callRoomIds = Object.values(activeCalls).map((call) => {
             return call.roomId
         })
@@ -82,22 +78,17 @@ export const ReactSipProvider = ({ children, }: {
             }
         })
         return rooms
-    }, [ allRooms ])
+    }, [ activeCalls, allRooms ])
+
+    const callsInActiveRoom = React.useMemo(() => {
+        return Object.values(activeCalls).filter((call) => call.roomId === currentActiveRoomId)
+    }, [ activeCalls, currentActiveRoomId ])
 
     useEffect(() => {
         if (!callsInActiveRoom.length && currentActiveRoomId) {
             setCurrentActiveRoomId(undefined)
         }
-    }, [ callsInActiveRoom ])
-
-    useEffect(() => {
-        if (activeCalls && currentActiveRoomId) {
-            const calls = Object.values(activeCalls)?.filter(
-                (call) => call?.roomId === currentActiveRoomId
-            )
-            setCallsInActiveRooms(calls)
-        }
-    }, [ activeCalls, currentActiveRoomId ])
+    }, [ callsInActiveRoom, currentActiveRoomId ])
 
     useEffect(() => {
         if (availableMediaDevices) {
@@ -193,7 +184,7 @@ export const ReactSipProvider = ({ children, }: {
             callWaiting: callWaiting,
         },
         actions: {
-            init (domain, username, password, pnExtraHeaders, pcConfig, onTransportCallback) {
+            init (domain, username, password, pnExtraHeaders, pcConfig, onTransportCallback, reconnectionAttemptsLimit) {
                 setConnectionStatus(ConnectionStausEnum.CONNECTING)
                 return new Promise((resolve, reject) => {
                     try {
@@ -202,7 +193,14 @@ export const ReactSipProvider = ({ children, }: {
                                 session_timers: false,
                                 uri: `sip:${username}@${domain}`,
                                 password: password,
-                                onTransportCallback
+                                reconnectionAttemptsLimit,
+                                onTransportCallback,
+                                noiseReductionOptions: {
+                                    mode: 'dynamic',
+                                    noiseThreshold: 0.004,
+                                    checkEveryMs: 500,
+                                    noiseCheckInterval: 2000
+                                },
                             },
                             socketInterfaces: [ `wss://${domain}` ],
                             sipDomain: `${domain}`,
@@ -272,19 +270,19 @@ export const ReactSipProvider = ({ children, }: {
                             })
                             .on(
                                 'addRoom',
-                                ({ roomList }: { roomList: { [key: number]: IRoom } }) => {
+                                ({ roomList }: { roomList: { [key: number | string]: IRoom } }) => {
                                     setAllRooms({ ...roomList })
                                 }
                             )
                             .on(
                                 'updateRoom',
-                                ({ roomList }: { roomList: { [key: number]: IRoom } }) => {
+                                ({ roomList }: { roomList: { [key: number | string]: IRoom } }) => {
                                     setAllRooms({ ...roomList })
                                 }
                             )
                             .on(
                                 'removeRoom',
-                                ({ roomList }: { roomList: { [key: number]: IRoom } }) => {
+                                ({ roomList }: { roomList: { [key: number | string]: IRoom } }) => {
                                     setAllRooms({ ...roomList })
                                 }
                             )
@@ -302,8 +300,7 @@ export const ReactSipProvider = ({ children, }: {
                                 setConnectionStatus(ConnectionStausEnum.CONNECTING)
                             })
                             .on('connection', (status) => {
-                                console.log('status', status)
-                                if(status) {
+                                if (status) {
                                     setConnectionStatus(ConnectionStausEnum.CONNECTED)
                                 } else {
                                     setConnectionStatus(ConnectionStausEnum.DISCONNECTED)
