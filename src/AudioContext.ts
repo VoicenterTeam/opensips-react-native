@@ -6,8 +6,13 @@ export class AudioContext {
     // @ts-expect-error: next-line
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private destination = null
+    private startTime = Date.now()
 
     constructor () {}
+
+    get currentTime (): number {
+        return (Date.now() - this.startTime) / 1000
+    }
 
     createMediaStreamSource (stream: MediaStream) {
         this.stream = stream
@@ -45,8 +50,19 @@ export class AudioContext {
             // @ts-expect-error: next-line
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             connect (destinationNode: AudioNode, output?: number, input?: number) {},
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            disconnect () {},
             gain: {
-                value: 0
+                value: 0,
+                // @ts-expect-error: next-line
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                cancelScheduledValues (startTime: number) {},
+                // @ts-expect-error: next-line
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                setValueAtTime (value: number, startTime: number) {},
+                // @ts-expect-error: next-line
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                linearRampToValueAtTime (value: number, endTime: number) {},
             },
         }
     }
@@ -62,6 +78,24 @@ export class AudioContext {
             // @ts-expect-error: next-line
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             getByteFrequencyData (array: Uint8Array) {},
+        }
+    }
+
+    createOscillator () {
+        return {
+            frequency: {
+                value: 440, // Default frequency in Hz
+            },
+            type: 'sine',
+            // @ts-expect-error: next-line
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            connect (destinationNode: AudioNode, output?: number, input?: number) {},
+            start () {
+                // Stub implementation - no actual audio in React Native
+            },
+            stop () {
+                // Stub implementation - no actual audio in React Native
+            },
         }
     }
 

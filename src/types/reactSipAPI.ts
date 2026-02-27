@@ -90,7 +90,8 @@ export interface ReactSipAPIActions {
     pnExtraHeaders: ExtraContactParams,
     pcConfig?: IPCConfig,
     onTransportCallback?: OnTransportCallback,
-    reconnectionAttemptsLimit?: number
+    reconnectionAttemptsLimit?: number,
+    existingInstance?: OpenSIPSJS | null
   ): Promise<OpenSIPSJS | undefined>;
   register(): void
   unregister: () => void;

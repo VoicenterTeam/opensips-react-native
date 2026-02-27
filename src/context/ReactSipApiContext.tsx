@@ -184,34 +184,40 @@ export const ReactSipProvider = ({ children, }: {
             callWaiting: callWaiting,
         },
         actions: {
-            init (domain, username, password, pnExtraHeaders, pcConfig, onTransportCallback, reconnectionAttemptsLimit) {
+            init ( domain, username, password, pnExtraHeaders, pcConfig, onTransportCallback, reconnectionAttemptsLimit, existingInstance = null ) {
                 setConnectionStatus(ConnectionStausEnum.CONNECTING)
                 return new Promise((resolve, reject) => {
                     try {
-                        openSIPSJS = new OpenSIPSJS({
-                            configuration: {
-                                session_timers: false,
-                                uri: `sip:${username}@${domain}`,
-                                password: password,
-                                reconnectionAttemptsLimit,
-                                onTransportCallback,
-                                noiseReductionOptions: {
-                                    mode: 'dynamic',
-                                    noiseThreshold: 0.004,
-                                    checkEveryMs: 500,
-                                    noiseCheckInterval: 2000
+                        if (existingInstance) {
+                            console.log('[ReactSip]Using existing instance')
+                            openSIPSJS = existingInstance
+                        } else {
+                            console.log('[ReactSip] Creating new OpenSIPSJS instance')
+                            openSIPSJS = new OpenSIPSJS({
+                                configuration: {
+                                    session_timers: false,
+                                    uri: `sip:${username}@${domain}`,
+                                    password: password,
+                                    reconnectionAttemptsLimit,
+                                    onTransportCallback,
+                                    noiseReductionOptions: {
+                                        mode: 'dynamic',
+                                        noiseThreshold: 0.004,
+                                        checkEveryMs: 500,
+                                        noiseCheckInterval: 2000
+                                    },
                                 },
-                            },
-                            socketInterfaces: [ `wss://${domain}` ],
-                            sipDomain: `${domain}`,
-                            pnExtraHeaders: pnExtraHeaders,
-                            sipOptions: {
-                                session_timers: false,
-                                extraHeaders: [ 'X-Bar: bar' ],
-                                pcConfig: pcConfig ? pcConfig : {}
-                            },
-                            modules: [ 'audio' ]
-                        })
+                                socketInterfaces: [ `wss://${domain}` ],
+                                sipDomain: `${domain}`,
+                                pnExtraHeaders: pnExtraHeaders,
+                                sipOptions: {
+                                    session_timers: false,
+                                    extraHeaders: [ 'X-Bar: bar' ],
+                                    pcConfig: pcConfig ? pcConfig : {}
+                                },
+                                modules: [ 'audio' ]
+                            })
+                        }
                         /* openSIPSJS Listeners */
                         openSIPSJS
                             .on('ready', () => {
@@ -306,11 +312,29 @@ export const ReactSipProvider = ({ children, }: {
                                     setConnectionStatus(ConnectionStausEnum.DISCONNECTED)
                                 }
                             })
-                            .begin()
+                        if (!existingInstance) {
+                            openSIPSJS.begin()
+                        } else {
+                            if (openSIPSJS.initialized) {
+                                setAddCallToCurrentRoom(false)
+                                setInitialized(true)
+                                if (openSIPSJS.audio?.getActiveCalls) {
+                                    setAllCalls({ ...openSIPSJS.audio.getActiveCalls })
+                                }
+                                if (openSIPSJS.audio?.getActiveRooms) {
+                                    setAllRooms({ ...openSIPSJS.audio.getActiveRooms })
+                                }
+                                if(openSIPSJS.isConnected()) {
+                                    setConnectionStatus(ConnectionStausEnum.CONNECTED)
+                                }
+                                resolve(openSIPSJS)
+                            }
+                        }
                     } catch (e) {
                         reject()
                         console.error(e)
                     }
+                    
                 })
             },
             unregister () {

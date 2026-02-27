@@ -1,6 +1,6 @@
 {
   "name": "opensips-js-react-native",
-  "version": "0.1.15",
+  "version": "0.1.20",
   "type": "module",
   "scripts": {
     "prepare": "bob build",
@@ -14,7 +14,7 @@
     "library/*"
   ],
   "dependencies": {
-    "opensips-js": "0.1.16",
+    "opensips-js": "^0.1.39",
     "core-js": "3.8.3",
     "react-native-webrtc": "*"
   },
