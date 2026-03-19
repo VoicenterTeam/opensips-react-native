@@ -12,4 +12,6 @@ export {
 } from './context'
 export * from './types'
 
+export { patchRTCPeerConnectionForOpusDtx, setOpusDtxEnabled } from './utils/opusDtxSdpPatch'
+
 export { register } from './register'

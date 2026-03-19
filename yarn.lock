@@ -4193,10 +4193,10 @@ onetime@^5.1.0:
   dependencies:
     mimic-fn "^2.1.0"
 
-opensips-js@^0.1.39:
-  version "0.1.39"
-  resolved "https://registry.yarnpkg.com/opensips-js/-/opensips-js-0.1.39.tgz#b4a58074f8322328f993444568fbf8f845bc423f"
-  integrity sha512-//nWEeBhDGcHDdTM81g9EYCosC87ATUwQROclmMnZbdAMycJXaA5kIPXugOjbPN0B5lWUaebkooS18ZcQ0cWFw==
+opensips-js@0.1.48:
+  version "0.1.48"
+  resolved "http://localhost:4873/opensips-js/-/opensips-js-0.1.48.tgz#e24bd4819ae983d7ca603a596de8c2d1eef37aaa"
+  integrity sha512-vzGihxDu56hlDjwI/0KCvpmCOMc8DjM24AiKA1ZyxaSNEv6weB97YVjcV5dq5yi06g8n5cI+JfGkxnPYZEqxCg==
   dependencies:
     "@types/mime" "^3.0.1"
     generate-unique-id "^2.0.1"

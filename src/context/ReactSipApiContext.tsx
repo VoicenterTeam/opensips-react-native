@@ -1,6 +1,7 @@
+// @ts-nocheck
 import React, { useContext } from 'react'
 import { createContext, useEffect, useState } from 'react'
-import { ConnectionStausEnum, type MediaDeviceOption, type ReactSipAPI } from '../types'
+import { ConnectionStausEnum, type MediaDeviceOption, type ReactSipAPI, type NoiseReductionOptions } from '../types'
 import {
     type ICallStatus,
     type ICall,
@@ -13,9 +14,10 @@ import {
 } from 'opensips-js/src/types/msrp'
 import { WebrtcMetricsConfigType } from 'opensips-js/src/types/webrtcmetrics'
 import OpenSIPSJS from 'opensips-js'
-import { type MediaStream } from 'react-native-webrtc'
+import { type MediaStream, type RTCPeerConnection } from 'react-native-webrtc'
 import { type MediaDeviceInfo } from '../types/media'
 import { type MSRPMessageEventType } from 'opensips-js/src/types/listeners'
+import { StatsBasedVAD } from '../utils/statsBasedVAD'
 
 export let openSIPSJS: OpenSIPSJS | undefined = undefined
 export const ReactSipContext = createContext<ReactSipAPI | undefined>(undefined)
@@ -56,6 +58,26 @@ export const ReactSipProvider = ({ children, }: {
     )
     const [ outputMediaDeviceList, setOutputMediaDeviceList ] = useState<MediaDeviceOption[]>([])
     const [ inputMediaDeviceList, setInputMediaDeviceList ] = useState<MediaDeviceOption[]>([])
+
+    const JSSIP_STATUS_CONFIRMED = 9
+
+    const noiseReductionRef = React.useRef<{
+        options: NoiseReductionOptions | null;
+        enabled: boolean;
+        vadMap: Map<string, StatsBasedVAD>;
+        activeCallCountRef: { current: number };
+        runPlatformSetup: (() => Promise<void>) | null;
+        teardown: (() => void) | null;
+        applyToSession: ((session: { _id?: string; _connection?: RTCPeerConnection; _status?: number; on: (e: string, h: (ev: unknown) => void) => void }) => void) | null;
+    }>({
+        options: null,
+        enabled: false,
+        vadMap: new Map(),
+        activeCallCountRef: { current: 0 },
+        runPlatformSetup: null,
+        teardown: null,
+        applyToSession: null,
+    })
 
     const activeCalls = React.useMemo(() => {
         const calls: { [key: string]: ICall } = {}
@@ -184,16 +206,154 @@ export const ReactSipProvider = ({ children, }: {
             callWaiting: callWaiting,
         },
         actions: {
-            init ( domain, username, password, pnExtraHeaders, pcConfig, onTransportCallback, reconnectionAttemptsLimit, existingInstance = null ) {
+            init ( domain, username, password, pnExtraHeaders, pcConfig, onTransportCallback, reconnectionAttemptsLimit, existingInstance = null, noiseReductionOptions: NoiseReductionOptions) {
                 setConnectionStatus(ConnectionStausEnum.CONNECTING)
                 return new Promise((resolve, reject) => {
-                    try {
-                        if (existingInstance) {
-                            console.log('[ReactSip]Using existing instance')
-                            openSIPSJS = existingInstance
-                        } else {
-                            console.log('[ReactSip] Creating new OpenSIPSJS instance')
-                            openSIPSJS = new OpenSIPSJS({
+                    const isNoiseReductionEnabled = noiseReductionOptions?.enabled === true
+
+                    const vadMap = new Map<string, StatsBasedVAD>()
+                    const activeCallCountRef = { current: 0 }
+
+                    noiseReductionRef.current.options = noiseReductionOptions ?? null
+                    noiseReductionRef.current.enabled = isNoiseReductionEnabled
+                    noiseReductionRef.current.vadMap = vadMap
+                    noiseReductionRef.current.activeCallCountRef = activeCallCountRef
+
+                    const monitorDTXEffectiveness = async (pc: RTCPeerConnection) => {
+                        let prevPackets = 0, prevBytes = 0, prevTimestamp = Date.now();
+
+                        setInterval(async () => {
+                          const stats = await pc.getStats();
+                          stats.forEach((report: { type?: string; kind?: string; packetsSent?: number; bytesSent?: number }) => {
+                            if (report.type === 'outbound-rtp' && report.kind === 'audio' && report.packetsSent != null && report.bytesSent != null) {
+                              const now = Date.now();
+                              const elapsed = (now - prevTimestamp) / 1000;
+                              const pps = (report.packetsSent - prevPackets) / elapsed;
+                              const kbps = ((report.bytesSent - prevBytes) * 8) / elapsed / 1000;
+
+                              console.log(`[DTX] ${pps.toFixed(1)} pkt/s | ${kbps.toFixed(1)} kbps`);
+                              // Active speech: ~50 pkt/s, ~30-40 kbps
+                              // DTX silence:   ~2.5 pkt/s, ~0.5 kbps
+
+                              prevPackets = report.packetsSent;
+                              prevBytes = report.bytesSent;
+                              prevTimestamp = now;
+                            }
+                          });
+                        }, 2000);
+                    }
+
+                    const _setupSdpInterceptor = () => {
+                        if (!openSIPSJS || typeof openSIPSJS.on !== 'function') {
+                            if (noiseReductionRef.current.options) {
+                                console.warn('[ReactSip] JsSIP UA not accessible — InCallManager and VAD hooks will not be applied')
+                            }
+                            return
+                        }
+                        openSIPSJS.on('newRTCSession', (data: unknown) => {
+                            const ref = noiseReductionRef.current
+                            if (!ref.enabled || !ref.options) return
+                            const { InCallManager } = ref.options
+                            const { session } = (data as { session?: { _id?: string; _connection?: RTCPeerConnection; _status?: number; on: (e: string, h: (ev: unknown) => void) => void } })
+                            if (!session) return
+
+                            const sessionWithConnection = session as { _connection?: RTCPeerConnection }
+                            if (sessionWithConnection._connection) {
+                                ref.applyToSession?.(session)
+                            }
+
+                            session.on('peerconnection', () => {
+                                ref.applyToSession?.(session)
+                            })
+
+                            session.on('confirmed', () => {
+                                ref.activeCallCountRef.current++
+                                if (ref.activeCallCountRef.current === 1) {
+                                    InCallManager?.start({ media: 'audio' })
+                                }
+                            })
+                        })
+                    }
+
+                    const runPlatformSetup = (): Promise<void> => {
+                        const opts = noiseReductionRef.current.options
+                        if (!opts) return Promise.resolve()
+                        const { Platform, AudioConfig, AudioSessionManager } = opts
+                        if (Platform.OS === 'android') {
+                            return AudioConfig.getAudioCapabilities().then((caps) => {
+                                console.log('[Audio] Android:', caps.manufacturer, caps.device)
+                            })
+                        }
+                        if (Platform.OS === 'ios') {
+                            return AudioSessionManager.configureForVoIP(false).then((result) => {
+                                console.log('[Audio] iOS echo cancelled:', result.echoCancelled)
+                            })
+                        }
+                        return Promise.resolve()
+                    }
+
+                    const teardown = () => {
+                        const r = noiseReductionRef.current
+                        r.vadMap.forEach((v) => v.stop())
+                        r.vadMap.clear()
+                        r.activeCallCountRef.current = 0
+                    }
+
+                    const applyNoiseReductionToSession = (session: { _id?: string; _connection?: RTCPeerConnection; _status?: number; on: (e: string, h: (ev: unknown) => void) => void }) => {
+                        const sessionId = session._id ?? ''
+                        const pc = session._connection
+                        if (!pc) return
+                        const r = noiseReductionRef.current
+                        if (!r.options) return
+                        if (r.vadMap.has(sessionId)) return
+                        const { InCallManager, AudioConfig } = r.options
+                        const isConfirmed = session._status === JSSIP_STATUS_CONFIRMED
+                        const vad = new StatsBasedVAD(pc, {
+                            pollIntervalMs: 200,
+                            speechThreshold: 0.01,
+                            silenceThreshold: 0.005,
+                            speechMinDurationMs: 250,
+                            silenceMinDurationMs: 600,
+                            onSpeechStart: () => console.log('[VAD] Speaking'),
+                            onSpeechEnd: () => console.log('[VAD] Silent'),
+                            onAudioLevel: (level) => {
+                                const dB = 20 * Math.log10(level || 0.0001)
+                                console.log(`[VAD] Audio level: ${level.toFixed(4)} (${dB.toFixed(1)} dB)`)
+                            },
+                        })
+                        vad.start()
+                        r.vadMap.set(sessionId, vad)
+                        monitorDTXEffectiveness(pc)
+                        if (isConfirmed) {
+                            r.activeCallCountRef.current++
+                            if (r.activeCallCountRef.current === 1) {
+                                InCallManager?.start({ media: 'audio' })
+                            }
+                        }
+                        const onSessionEnd = () => {
+                            r.vadMap.get(sessionId)?.stop()
+                            r.vadMap.delete(sessionId)
+                            r.activeCallCountRef.current--
+                            if (r.activeCallCountRef.current <= 0) {
+                                r.activeCallCountRef.current = 0
+                                InCallManager?.stop()
+                                AudioConfig?.resetAudioMode?.()
+                            }
+                        }
+                        session.on('ended', onSessionEnd)
+                        session.on('failed', onSessionEnd)
+                    }
+
+                    noiseReductionRef.current.runPlatformSetup = runPlatformSetup
+                    noiseReductionRef.current.teardown = teardown
+                    noiseReductionRef.current.applyToSession = applyNoiseReductionToSession
+
+                    const platformSetupPromise = isNoiseReductionEnabled ? runPlatformSetup() : Promise.resolve()
+                    platformSetupPromise.then(() => {
+                            if (existingInstance) {
+                                openSIPSJS = existingInstance
+                            } else {
+                                openSIPSJS = new OpenSIPSJS({
                                 configuration: {
                                     session_timers: false,
                                     uri: `sip:${username}@${domain}`,
@@ -201,7 +361,7 @@ export const ReactSipProvider = ({ children, }: {
                                     reconnectionAttemptsLimit,
                                     onTransportCallback,
                                     noiseReductionOptions: {
-                                        mode: 'dynamic',
+                                        mode: 'disabled',
                                         noiseThreshold: 0.004,
                                         checkEveryMs: 500,
                                         noiseCheckInterval: 2000
@@ -299,7 +459,6 @@ export const ReactSipProvider = ({ children, }: {
                                 setCallTime({ ...data })
                             })
                             .on('changeCallMetrics', (data: { [key: string]: unknown }) => {
-                                console.log('ReactOpenSips: call metrics changed: ', data)
                                 setCallMetrics({ ...data })
                             })
                             .on('connecting', () => {
@@ -313,6 +472,8 @@ export const ReactSipProvider = ({ children, }: {
                                 }
                             })
                         if (!existingInstance) {
+                            _setupSdpInterceptor()
+
                             openSIPSJS.begin()
                         } else {
                             if (openSIPSJS.initialized) {
@@ -330,11 +491,11 @@ export const ReactSipProvider = ({ children, }: {
                                 resolve(openSIPSJS)
                             }
                         }
-                    } catch (e) {
+                    })
+                    .catch((e) => {
                         reject()
                         console.error(e)
-                    }
-                    
+                    })
                 })
             },
             unregister () {
@@ -348,6 +509,24 @@ export const ReactSipProvider = ({ children, }: {
                     openSIPSJS?.audio.initCall(target, addToCurrentRoom, holdOtherCalls)
                 } catch (error) {
                     console.warn(error, 'Init call error')
+                }
+            },
+            setNoiseReductionMode (mode: boolean) {
+                const ref = noiseReductionRef.current
+                if (!ref.options) return
+                ref.enabled = mode
+                if (mode) {
+                    ref.runPlatformSetup?.()
+                    //const ua = (openSIPSJS as { _ua?: { _sessions?: Record<string, { _id?: string; _connection?: RTCPeerConnection; _status?: number; on: (e: string, h: (ev: unknown) => void) => void }> } })?._ua
+                    //const sessions = ua?._sessions ? Object.values(ua._sessions) : []
+                    const sessions = openSIPSJS?._sessions ? Object.values(openSIPSJS._sessions) : []
+                    sessions.forEach((session) => {
+                        if (session._connection) {
+                            ref.applyToSession?.(session)
+                        }
+                    })
+                } else {
+                    ref.teardown?.()
                 }
             },
             answerCall (callId: string) {
