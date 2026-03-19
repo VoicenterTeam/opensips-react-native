@@ -83,10 +83,6 @@ export interface IPCConfig {
   iceServers: IceServeType[];
 }
 
-/**
- * Passed from the React Native app. This library has no access to NativeModules.
- * Use for InCallManager (audio routing) and AudioConfig (Android audio mode).
- */
 export interface NoiseReductionOptions {
   enabled: boolean;
   Platform: {

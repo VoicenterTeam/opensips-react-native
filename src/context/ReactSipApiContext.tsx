@@ -517,8 +517,6 @@ export const ReactSipProvider = ({ children, }: {
                 ref.enabled = mode
                 if (mode) {
                     ref.runPlatformSetup?.()
-                    //const ua = (openSIPSJS as { _ua?: { _sessions?: Record<string, { _id?: string; _connection?: RTCPeerConnection; _status?: number; on: (e: string, h: (ev: unknown) => void) => void }> } })?._ua
-                    //const sessions = ua?._sessions ? Object.values(ua._sessions) : []
                     const sessions = openSIPSJS?._sessions ? Object.values(openSIPSJS._sessions) : []
                     sessions.forEach((session) => {
                         if (session._connection) {
