@@ -521,9 +521,18 @@ export const ReactSipProvider = ({ children, }: {
                     sessions.forEach((session) => {
                         if (session._connection) {
                             ref.applyToSession?.(session)
+                            if (typeof session.renegotiate === 'function') {
+                                session.renegotiate()
+                            }
                         }
                     })
                 } else {
+                    const sessions = openSIPSJS?._sessions ? Object.values(openSIPSJS._sessions) : []
+                    sessions.forEach((session) => {
+                        if (session._connection && typeof session.renegotiate === 'function') {
+                            session.renegotiate()
+                        }
+                    })
                     ref.teardown?.()
                 }
             },
