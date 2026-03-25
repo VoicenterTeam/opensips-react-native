@@ -82,6 +82,25 @@ type IceServeType = {
 export interface IPCConfig {
   iceServers: IceServeType[];
 }
+
+export interface NoiseReductionOptions {
+  enabled: boolean;
+  Platform: {
+    OS: string;
+  };
+  AudioSessionManager: {
+    configureForVoIP: (echoCancelled: boolean) => Promise<{ echoCancelled: boolean }>;
+  };
+  InCallManager: {
+    start: (setup?: { auto?: boolean; media?: 'video' | 'audio'; ringback?: string }) => void;
+    stop: () => void;
+  };
+  AudioConfig: {
+    resetAudioMode?: () => void;
+    getAudioCapabilities: () => Promise<{ manufacturer: string; device: string }>;
+  };
+}
+
 export interface ReactSipAPIActions {
   init(
     domain: string,
@@ -91,7 +110,8 @@ export interface ReactSipAPIActions {
     pcConfig?: IPCConfig,
     onTransportCallback?: OnTransportCallback,
     reconnectionAttemptsLimit?: number,
-    existingInstance?: OpenSIPSJS | null
+    existingInstance?: OpenSIPSJS | null,
+    noiseReductionOptions?: NoiseReductionOptions
   ): Promise<OpenSIPSJS | undefined>;
   register(): void
   unregister: () => void;
@@ -121,6 +141,7 @@ export interface ReactSipAPIActions {
   setSpeakerVolume: (value: number) => void;
   setAutoAnswer: (value: boolean) => void;
   setCallWaiting: (value: boolean) => void;
+  setNoiseReductionMode: (enabled: boolean) => void;
   stop: () => void;
   disconnect: () => void;
   mergeCallByIds: (firstCallId: string, secondCallId: string) => void;
